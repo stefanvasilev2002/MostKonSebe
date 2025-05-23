@@ -1,12 +1,20 @@
 import React from 'react';
 import { Award } from 'lucide-react';
+import logoSvg from './image.svg';
 
 const Header = ({ currentUser }) => {
     return (
         <div className="bg-white shadow-sm border-b">
             <div className="px-6 py-4">
                 <div className="flex items-center justify-between">
-                    <h1 className="text-2xl font-bold text-gray-800">Мост Кон Себе</h1>
+                    <div className="flex items-center gap-3">
+                        <img
+                            src={logoSvg}
+                            alt="Мост Кон Себе Logo"
+                            className="w-12 h-12 object-contain"
+                        />
+                        <h1 className="text-2xl font-bold text-gray-800">Мост Кон Себе</h1>
+                    </div>
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-2">
                             <Award className="text-yellow-500" size={20} />

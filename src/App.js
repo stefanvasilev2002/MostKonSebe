@@ -27,7 +27,6 @@ const MostKonSebeApp = () => {
     { id: 2, type: 'tip', message: 'Денешен совет: Пробајте 5-минутно длабоко дишење' }
   ]);
 
-  // Load user data on component mount
   useEffect(() => {
     const savedData = loadUserData();
     if (savedData) {
@@ -35,12 +34,10 @@ const MostKonSebeApp = () => {
     }
   }, []);
 
-  // Save user data whenever it changes
   useEffect(() => {
     saveUserData(currentUser);
   }, [currentUser]);
 
-  // Handle daily check-in
   const handleDailyCheckIn = (mood) => {
     const today = new Date().toDateString();
     const isNewDay = currentUser.lastCheckIn !== today;
@@ -59,7 +56,6 @@ const MostKonSebeApp = () => {
     }
   };
 
-  // Add notification
   const addNotification = (type, message) => {
     const newNotification = {
       id: Date.now(),
@@ -70,7 +66,6 @@ const MostKonSebeApp = () => {
     setNotifications(prev => [newNotification, ...prev.slice(0, 4)]);
   };
 
-  // Complete activity
   const completeActivity = (activityName) => {
     const today = new Date().toDateString();
     const activityKey = `${activityName}-${today}`;
