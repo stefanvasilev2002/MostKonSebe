@@ -13,7 +13,7 @@ const Footer = () => {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                         <div className="text-center">
-                            <div className="font-bold text-red-800 text-lg">198</div>
+                            <div className="font-bold text-red-800 text-lg">123</div>
                             <div className="text-red-600">Национална кризна линија</div>
                         </div>
                         <div className="text-center">
@@ -33,7 +33,7 @@ const Footer = () => {
                     <div>
                         <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
                             <Heart className="text-purple-500" size={20} />
-                            За МладиНа
+                            За Мост Кон Себе
                         </h4>
                         <p className="text-sm text-gray-600 mb-3">
                             Дигитална платформа за поддршка на менталното здравје на младите во Македонија,
@@ -81,7 +81,7 @@ const Footer = () => {
                         <div className="space-y-2 text-sm text-gray-600">
                             <div className="flex items-center gap-2">
                                 <Mail size={16} />
-                                <span>info@mladina.mk</span>
+                                <span>info@mostkonsebe.mk</span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <Phone size={16} />

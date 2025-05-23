@@ -96,7 +96,7 @@ const StressManagement = ({ onCompleteActivity }) => {
             color: "red"
         },
         {
-            title: "Дишење техники",
+            title: "Техники за дишење",
             description: "4-7-8 техниката може да те смири за само неколку минути",
             color: "blue"
         },

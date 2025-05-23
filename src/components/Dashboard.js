@@ -47,7 +47,7 @@ const Dashboard = ({ currentUser, dailyCheckIn, onDailyCheckIn, notifications, o
                 <div className="flex gap-4">
                     <div className="bg-white bg-opacity-20 rounded-lg p-3 text-center">
                         <div className="text-2xl font-bold">{currentUser.streakDays}</div>
-                        <div className="text-sm">Дена подред</div>
+                        <div className="text-sm">дена редовна активност</div>
                     </div>
                     <div className="bg-white bg-opacity-20 rounded-lg p-3 text-center">
                         <div className="text-2xl font-bold">{currentUser.points}</div>

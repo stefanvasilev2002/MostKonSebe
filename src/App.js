@@ -9,7 +9,7 @@ import Resources from './components/Resources';
 import Footer from './components/Footer';
 import { loadUserData, saveUserData } from './utils/storage';
 
-const MladiNaApp = () => {
+const MostKonSebeApp = () => {
   const [currentUser, setCurrentUser] = useState({
     name: 'Марија',
     age: 14,
@@ -23,7 +23,7 @@ const MladiNaApp = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [dailyCheckIn, setDailyCheckIn] = useState(null);
   const [notifications, setNotifications] = useState([
-    { id: 1, type: 'achievement', message: 'Честитки! Завршивте 7 дена подред!' },
+    { id: 1, type: 'achievement', message: 'Честитки! Завршивте 7 последователни дена со активност!' },
     { id: 2, type: 'tip', message: 'Денешен совет: Пробајте 5-минутно длабоко дишење' }
   ]);
 
@@ -122,4 +122,4 @@ const MladiNaApp = () => {
   );
 };
 
-export default MladiNaApp;
+export default MostKonSebeApp;
