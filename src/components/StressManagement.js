@@ -136,7 +136,7 @@ const StressManagement = ({ onCompleteActivity }) => {
                         🫁
                     </div>
                     <p className="text-xl text-blue-800 mb-4 font-medium">
-                        {breathingActive ? getBreathingInstruction() : 'Вдишај за 4, задржи за 7, издишај за 8'}
+                        {breathingActive ? getBreathingInstruction() : 'Вдиши за 4, задржи за 7, издиши за 8'}
                     </p>
                     <div className="flex gap-4 justify-center">
                         {!breathingActive ? (
