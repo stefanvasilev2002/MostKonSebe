@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from './hooks/useAuth';
+import AuthModal from './components/Auth/AuthModal';
+import LandingPage from './components/LandingPage';
 import Header from './components/Header';
 import Navigation from './components/Navigation';
 import Dashboard from './components/Dashboard';
@@ -7,53 +10,104 @@ import PeerSupport from './components/PeerSupport';
 import Education from './components/Education';
 import Resources from './components/Resources';
 import Footer from './components/Footer';
-import { loadUserData, saveUserData } from './utils/storage';
+import { doc, updateDoc, increment, getDoc } from 'firebase/firestore';
+import { db } from './firebase/config';
 
 const MostKonSebeApp = () => {
-  const [currentUser, setCurrentUser] = useState({
-    name: 'Марија',
-    age: 14,
-    mood: 'neutral',
-    streakDays: 7,
-    points: 350,
-    lastCheckIn: null,
-    completedActivities: []
-  });
-
+  const { user, userProfile, loading, refreshUserProfile } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [dailyCheckIn, setDailyCheckIn] = useState(null);
-  const [notifications, setNotifications] = useState([
-    { id: 1, type: 'achievement', message: 'Честитки! Завршивте 7 последователни дена со активност!' },
-    { id: 2, type: 'tip', message: 'Денешен совет: Пробајте 5-минутно длабоко дишење' }
-  ]);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
-    const savedData = loadUserData();
-    if (savedData) {
-      setCurrentUser(prev => ({ ...prev, ...savedData }));
+    if (user && userProfile) {
+      const welcomeShown = sessionStorage.getItem('welcomeShown');
+      if (!welcomeShown) {
+        setNotifications([
+          { id: 1, type: 'achievement', message: `Добредојде назад, ${userProfile.name || 'Корисник'}!` },
+          { id: 2, type: 'tip', message: 'Денешен совет: Пробајте 5-минутно длабоко дишење' }
+        ]);
+        sessionStorage.setItem('welcomeShown', 'true');
+      }
     }
-  }, []);
+  }, [user, userProfile]);
 
-  useEffect(() => {
-    saveUserData(currentUser);
-  }, [currentUser]);
+  if (loading) {
+    return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
+            <p className="text-gray-600">Се вчитува...</p>
+          </div>
+        </div>
+    );
+  }
 
-  const handleDailyCheckIn = (mood) => {
+  if (!user) {
+    return (
+        <>
+          <LandingPage onOpenAuth={() => setShowAuthModal(true)} />
+          <AuthModal
+              isOpen={showAuthModal}
+              onClose={() => setShowAuthModal(false)}
+          />
+        </>
+    );
+  }
+
+  const updateUserData = async (updates) => {
+    if (!user) return;
+
+    try {
+      const userRef = doc(db, 'users', user.uid);
+      await updateDoc(userRef, updates);
+
+      if (refreshUserProfile) {
+        await refreshUserProfile();
+      }
+    } catch (error) {
+      console.error('Error updating user data:', error);
+      addNotification('error', 'Грешка при зачувување на податоците');
+    }
+  };
+
+  const handleDailyCheckIn = async (mood) => {
     const today = new Date().toDateString();
-    const isNewDay = currentUser.lastCheckIn !== today;
+    const isNewDay = userProfile?.lastCheckIn !== today;
 
-    setDailyCheckIn(mood);
-    setCurrentUser(prev => ({
-      ...prev,
+    const updates = {
       mood: mood,
-      lastCheckIn: today,
-      streakDays: isNewDay ? prev.streakDays + 1 : prev.streakDays,
-      points: isNewDay ? prev.points + 10 : prev.points
-    }));
+      lastCheckIn: today
+    };
 
     if (isNewDay) {
+      updates.streakDays = increment(1);
+      updates.points = increment(10);
+
       addNotification('success', 'Одлично! Добивте 10 поени за денешниот check-in!');
+    } else {
+      addNotification('info', 'Веќе направивте check-in денес!');
     }
+
+    await updateUserData(updates);
+  };
+
+  const handleCompleteActivity = async (activityName) => {
+    const today = new Date().toDateString();
+    const activityKey = `${activityName}-${today}`;
+
+    if (userProfile?.completedActivities?.includes(activityKey)) {
+      addNotification('info', 'Оваа активност е веќе завршена денес!');
+      return;
+    }
+
+    const updates = {
+      completedActivities: [...(userProfile?.completedActivities || []), activityKey],
+      points: increment(5)
+    };
+
+    await updateUserData(updates);
+    addNotification('success', `Одлично! Завршивте: ${activityName} (+5 поени)`);
   };
 
   const addNotification = (type, message) => {
@@ -63,56 +117,104 @@ const MostKonSebeApp = () => {
       message,
       timestamp: new Date()
     };
-    setNotifications(prev => [newNotification, ...prev.slice(0, 4)]);
+
+    setNotifications(prev => {
+      const updated = [newNotification, ...prev.slice(0, 4)];
+
+      setTimeout(() => {
+        setNotifications(current => current.filter(n => n.id !== newNotification.id));
+      }, 5000);
+
+      return updated;
+    });
   };
 
-  const completeActivity = (activityName) => {
-    const today = new Date().toDateString();
-    const activityKey = `${activityName}-${today}`;
-
-    if (!currentUser.completedActivities.includes(activityKey)) {
-      setCurrentUser(prev => ({
-        ...prev,
-        completedActivities: [...prev.completedActivities, activityKey],
-        points: prev.points + 5
-      }));
-      addNotification('success', `Одлично! Завршивте: ${activityName} (+5 поени)`);
-    }
+  const removeNotification = (notificationId) => {
+    setNotifications(prev => prev.filter(n => n.id !== notificationId));
   };
 
   const renderActiveTab = () => {
+    const commonProps = {
+      userProfile,
+      onCompleteActivity: handleCompleteActivity
+    };
+
     switch (activeTab) {
       case 'dashboard':
         return (
             <Dashboard
-                currentUser={currentUser}
-                dailyCheckIn={dailyCheckIn}
+                {...commonProps}
                 onDailyCheckIn={handleDailyCheckIn}
                 notifications={notifications}
-                onCompleteActivity={completeActivity}
             />
         );
       case 'stress':
-        return <StressManagement onCompleteActivity={completeActivity} />;
+        return <StressManagement {...commonProps} />;
       case 'peers':
-        return <PeerSupport currentUser={currentUser} />;
+        return <PeerSupport {...commonProps} />;
       case 'education':
-        return <Education />;
+        return <Education {...commonProps} />;
       case 'resources':
-        return <Resources />;
+        return <Resources {...commonProps} />;
       default:
-        return <Dashboard />;
+        return <Dashboard {...commonProps} />;
     }
   };
 
   return (
       <div className="max-w-4xl mx-auto bg-gray-50 min-h-screen">
-        <Header currentUser={currentUser} />
+        <Header currentUser={userProfile} />
         <Navigation activeTab={activeTab} setActiveTab={setActiveTab} />
+
+        {/* Notifications Display */}
+        {notifications.length > 0 && (
+            <div className="fixed top-4 right-4 z-50 space-y-2">
+              {notifications.slice(0, 3).map((notification) => (
+                  <div
+                      key={notification.id}
+                      className={`max-w-sm p-4 rounded-lg shadow-lg border-l-4 bg-white transform transition-all duration-300 animate-slide-in ${
+                          notification.type === 'success' ? 'border-green-500' :
+                              notification.type === 'info' ? 'border-blue-500' :
+                                  notification.type === 'error' ? 'border-red-500' :
+                                      'border-yellow-500'
+                      }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm text-gray-800">{notification.message}</p>
+                      <button
+                          onClick={() => removeNotification(notification.id)}
+                          className="text-gray-400 hover:text-gray-600 ml-2 transition-colors"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+              ))}
+            </div>
+        )}
+
         <div className="bg-gray-50">
           {renderActiveTab()}
         </div>
         <Footer />
+
+        {/* CSS за анимации */}
+        <style jsx>{`
+        @keyframes slide-in {
+          from {
+            opacity: 0;
+            transform: translateX(100%);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        
+        .animate-slide-in {
+          animation: slide-in 0.3s ease-out;
+        }
+      `}</style>
       </div>
   );
 };

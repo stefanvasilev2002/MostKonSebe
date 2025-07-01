@@ -3,13 +3,12 @@ import { Moon, BookOpen, Play, Pause, RotateCcw, Timer } from 'lucide-react';
 
 const StressManagement = ({ onCompleteActivity }) => {
     const [breathingActive, setBreathingActive] = useState(false);
-    const [breathingPhase, setBreathingPhase] = useState('inhale'); // inhale, hold, exhale
+    const [breathingPhase, setBreathingPhase] = useState('inhale');
     const [breathingTimer, setBreathingTimer] = useState(0);
-    const [pomodoroTimer, setPomodoroTimer] = useState(25 * 60); // 25 minutes
+    const [pomodoroTimer, setPomodoroTimer] = useState(25 * 60);
     const [pomodoroActive, setPomodoroActive] = useState(false);
-    const [pomodoroMode, setPomodoroMode] = useState('work'); // work, break
+    const [pomodoroMode, setPomodoroMode] = useState('work');
 
-    // Breathing exercise timer
     useEffect(() => {
         let interval;
         if (breathingActive) {
@@ -32,7 +31,6 @@ const StressManagement = ({ onCompleteActivity }) => {
         return () => clearInterval(interval);
     }, [breathingActive, breathingPhase]);
 
-    // Pomodoro timer
     useEffect(() => {
         let interval;
         if (pomodoroActive && pomodoroTimer > 0) {
@@ -40,14 +38,13 @@ const StressManagement = ({ onCompleteActivity }) => {
                 setPomodoroTimer(prev => prev - 1);
             }, 1000);
         } else if (pomodoroTimer === 0 && pomodoroActive) {
-            // Timer finished
             if (pomodoroMode === 'work') {
                 setPomodoroMode('break');
-                setPomodoroTimer(5 * 60); // 5 minute break
+                setPomodoroTimer(5 * 60);
                 onCompleteActivity('Pomodoro сесија');
             } else {
                 setPomodoroMode('work');
-                setPomodoroTimer(25 * 60); // 25 minute work
+                setPomodoroTimer(25 * 60);
             }
         }
         return () => clearInterval(interval);

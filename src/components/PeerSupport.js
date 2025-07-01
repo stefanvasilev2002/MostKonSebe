@@ -1,15 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { Users, MessageCircle, Send, ThumbsUp, Heart, UserPlus } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Users, MessageCircle, Send, Heart, UserPlus, AlertCircle } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
+import { useChat } from '../hooks/useChat';
 
-const PeerSupport = ({ currentUser }) => {
-    const [messages, setMessages] = useState([
-        { id: 1, user: 'Ана', message: 'Денес имав тежок ден во училиште, но се чувствувам подобро откако разговарав со мама.', timestamp: '10:30', likes: 3 },
-        { id: 2, user: 'Марко', message: 'Кој има совети за справување со анксиозност пред испити?', timestamp: '11:15', likes: 1 },
-        { id: 3, user: 'Петра', message: 'Вчера пробав медитација за прв пат - препорачувам! 🧘‍♀️', timestamp: '14:20', likes: 5 }
-    ]);
-    const [newMessage, setNewMessage] = useState('');
+const PeerSupport = () => {
+    const { user } = useAuth();
     const [selectedGroup, setSelectedGroup] = useState('general');
-    const [likedMessages, setLikedMessages] = useState(new Set());
+    const [newMessage, setNewMessage] = useState('');
+    const [sendingMessage, setSendingMessage] = useState(false);
+    const messagesEndRef = useRef(null);
+
+    const { messages, loading, error, sendMessage, toggleLike } = useChat(selectedGroup);
 
     const supportGroups = [
         { id: 'general', name: 'Општо разговарање', members: 67, color: 'blue' },
@@ -29,35 +30,38 @@ const PeerSupport = ({ currentUser }) => {
 
     const [todaysQuestion] = useState(dailyQuestions[new Date().getDay() % dailyQuestions.length]);
 
-    const sendMessage = () => {
-        if (newMessage.trim()) {
-            const message = {
-                id: messages.length + 1,
-                user: currentUser.name,
-                message: newMessage,
-                timestamp: new Date().toLocaleTimeString('mk-MK', { hour: '2-digit', minute: '2-digit' }),
-                likes: 0,
-                isOwn: true
-            };
-            setMessages(prev => [...prev, message]);
+    const handleSendMessage = async (e) => {
+        e.preventDefault();
+        if (!newMessage.trim() || sendingMessage) return;
+
+        setSendingMessage(true);
+        try {
+            await sendMessage(newMessage, user);
             setNewMessage('');
+        } catch (error) {
+            console.error('Failed to send message:', error);
+            alert('Неуспешно испраќање на порака. Пробајте повторно.');
+        } finally {
+            setSendingMessage(false);
         }
     };
 
-    const toggleLike = (messageId) => {
-        const newLikedMessages = new Set(likedMessages);
-        if (likedMessages.has(messageId)) {
-            newLikedMessages.delete(messageId);
-            setMessages(prev => prev.map(msg =>
-                msg.id === messageId ? { ...msg, likes: msg.likes - 1 } : msg
-            ));
-        } else {
-            newLikedMessages.add(messageId);
-            setMessages(prev => prev.map(msg =>
-                msg.id === messageId ? { ...msg, likes: msg.likes + 1 } : msg
-            ));
+    const handleLike = async (messageId) => {
+        await toggleLike(messageId, user.uid);
+    };
+
+    const formatTimestamp = (timestamp) => {
+        if (!timestamp) return '';
+
+        try {
+            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            return date.toLocaleTimeString('mk-MK', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        } catch (err) {
+            return '';
         }
-        setLikedMessages(newLikedMessages);
     };
 
     return (
@@ -120,61 +124,123 @@ const PeerSupport = ({ currentUser }) => {
                                 {supportGroups.find(g => g.id === selectedGroup)?.name || 'Општо разговарање'}
                             </h3>
                             <p className="text-sm text-gray-600">
-                                {supportGroups.find(g => g.id === selectedGroup)?.members} членови онлајн
+                                {loading ? 'Се вчитува...' :
+                                    error ? 'Грешка при вчитување' :
+                                        `${messages.length} пораки`}
                             </p>
                         </div>
 
                         {/* Messages */}
                         <div className="h-80 overflow-y-auto p-4 space-y-4">
-                            {messages.map((message) => (
-                                <div key={message.id} className="flex items-start gap-3">
-                                    <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                                        {message.user.charAt(0)}
-                                    </div>
-                                    <div className="flex-1">
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <span className="font-medium text-sm text-gray-800">{message.user}</span>
-                                            <span className="text-xs text-gray-500">{message.timestamp}</span>
-                                            {message.isOwn && <span className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded">Вие</span>}
-                                        </div>
-                                        <p className="text-sm text-gray-700 mb-2">{message.message}</p>
+                            {error ? (
+                                <div className="flex items-center justify-center h-full">
+                                    <div className="text-center text-red-500">
+                                        <AlertCircle size={48} className="mx-auto mb-2 opacity-50" />
+                                        <p>Грешка при вчитување на пораките</p>
+                                        <p className="text-sm text-gray-500 mt-1">
+                                            Проверете ја интернет врската и пробајте повторно
+                                        </p>
                                         <button
-                                            onClick={() => toggleLike(message.id)}
-                                            className={`flex items-center gap-1 text-xs ${
-                                                likedMessages.has(message.id) ? 'text-red-500' : 'text-gray-500 hover:text-red-500'
-                                            } transition-colors`}
+                                            onClick={() => window.location.reload()}
+                                            className="mt-2 px-4 py-2 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600"
                                         >
-                                            <Heart size={14} fill={likedMessages.has(message.id) ? 'currentColor' : 'none'} />
-                                            {message.likes}
+                                            Освежи страница
                                         </button>
                                     </div>
                                 </div>
-                            ))}
+                            ) : loading ? (
+                                <div className="flex items-center justify-center h-full">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+                                </div>
+                            ) : messages.length === 0 ? (
+                                <div className="flex items-center justify-center h-full text-gray-500">
+                                    <div className="text-center">
+                                        <MessageCircle size={48} className="mx-auto mb-2 opacity-50" />
+                                        <p>Нема пораки во оваа група.</p>
+                                        <p className="text-sm">Бидете првиот кој ќе започне разговор!</p>
+                                    </div>
+                                </div>
+                            ) : (
+                                messages.map((message) => (
+                                    <div key={message.id} className="flex items-start gap-3">
+                                        <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                                            {message.userName?.charAt(0) || 'A'}
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="font-medium text-sm text-gray-800">
+                                                    {message.userName || 'Анонимен'}
+                                                </span>
+                                                <span className="text-xs text-gray-500">
+                                                    {formatTimestamp(message.timestamp)}
+                                                </span>
+                                                {message.userId === user?.uid && (
+                                                    <span className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded">
+                                                        Вие
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <p className="text-sm text-gray-700 mb-2">{message.text}</p>
+                                            <button
+                                                onClick={() => handleLike(message.id)}
+                                                className={`flex items-center gap-1 text-xs transition-colors ${
+                                                    message.likedBy?.includes(user?.uid)
+                                                        ? 'text-red-500'
+                                                        : 'text-gray-500 hover:text-red-500'
+                                                }`}
+                                            >
+                                                <Heart
+                                                    size={14}
+                                                    fill={message.likedBy?.includes(user?.uid) ? 'currentColor' : 'none'}
+                                                />
+                                                {message.likes || 0}
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                            <div ref={messagesEndRef} />
                         </div>
 
                         {/* Message Input */}
                         <div className="border-t p-4">
-                            <div className="flex gap-2">
+                            <form onSubmit={handleSendMessage} className="flex gap-2">
                                 <input
                                     type="text"
                                     value={newMessage}
                                     onChange={(e) => setNewMessage(e.target.value)}
                                     placeholder="Споделете ги вашите мисли..."
                                     className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:border-purple-500"
-                                    onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+                                    disabled={loading || sendingMessage || error}
                                 />
                                 <button
-                                    onClick={sendMessage}
-                                    className="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors flex items-center gap-2"
+                                    type="submit"
+                                    disabled={!newMessage.trim() || loading || sendingMessage || error}
+                                    className="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <Send size={16} />
-                                    Испрати
+                                    {sendingMessage ? 'Испраќа...' : 'Испрати'}
                                 </button>
-                            </div>
+                            </form>
                         </div>
                     </div>
                 </div>
             </div>
+
+            {/* Chat Instructions */}
+            {error && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <h3 className="font-semibold text-red-800 mb-2">⚠️ Проблем со поврзувањето</h3>
+                    <p className="text-red-700 text-sm mb-2">
+                        Има проблем со поврзувањето на chat системот. Ова може да се случи ако:
+                    </p>
+                    <ul className="text-red-700 text-sm space-y-1 ml-4">
+                        <li>• Firebase правилата не се правилно поставени</li>
+                        <li>• Нема интернет врска</li>
+                        <li>• Firestore базата е недостапна</li>
+                    </ul>
+                </div>
+            )}
 
             {/* Anonymous Support */}
             <div className="bg-white border rounded-lg p-4 shadow-sm">
@@ -203,6 +269,29 @@ const PeerSupport = ({ currentUser }) => {
                 </div>
             </div>
 
+            {/* Real-time Status */}
+            <div className="bg-white border rounded-lg p-4 shadow-sm">
+                <h3 className="font-semibold text-gray-800 mb-3">📊 Статистики во живо</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="text-center p-3 bg-blue-50 rounded-lg">
+                        <div className="text-2xl font-bold text-blue-600">{messages.length}</div>
+                        <div className="text-sm text-blue-800">Пораки денес</div>
+                    </div>
+                    <div className="text-center p-3 bg-green-50 rounded-lg">
+                        <div className="text-2xl font-bold text-green-600">
+                            {supportGroups.find(g => g.id === selectedGroup)?.members || 0}
+                        </div>
+                        <div className="text-sm text-green-800">Активни членови</div>
+                    </div>
+                    <div className="text-center p-3 bg-purple-50 rounded-lg">
+                        <div className="text-2xl font-bold text-purple-600">
+                            {messages.reduce((sum, msg) => sum + (msg.likes || 0), 0)}
+                        </div>
+                        <div className="text-sm text-purple-800">Вкупно ❤️</div>
+                    </div>
+                </div>
+            </div>
+
             {/* Motivational Messages */}
             <div className="bg-white border rounded-lg p-4 shadow-sm">
                 <h3 className="font-semibold text-gray-800 mb-3">💪 Мотивирачки пораки од врсници</h3>
@@ -217,9 +306,15 @@ const PeerSupport = ({ currentUser }) => {
                             "Разговарањето со пријатели ми помага повеќе од било што друго. Не бидете сами!" - Марко, 14 години
                         </p>
                     </div>
+                    <div className="bg-gradient-to-r from-green-100 to-teal-100 p-3 rounded-lg">
+                        <p className="text-gray-800 text-sm italic">
+                            "Сподели го тоа што те мачи - ќе се изненадиш колку луѓе разбираат." - Петра, 16 години
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
     );
 };
+
 export default PeerSupport;
