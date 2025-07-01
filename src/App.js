@@ -10,7 +10,7 @@ import PeerSupport from './components/PeerSupport';
 import Education from './components/Education';
 import Resources from './components/Resources';
 import Footer from './components/Footer';
-import { doc, updateDoc, increment, getDoc } from 'firebase/firestore';
+import { doc, updateDoc, increment } from 'firebase/firestore';
 import { db } from './firebase/config';
 
 const MostKonSebeApp = () => {
@@ -199,7 +199,7 @@ const MostKonSebeApp = () => {
         <Footer />
 
         {/* CSS за анимации */}
-        <style jsx>{`
+        <style>{`
         @keyframes slide-in {
           from {
             opacity: 0;

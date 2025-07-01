@@ -168,7 +168,7 @@ const Resources = () => {
             {/* Mental Health Centers */}
             {selectedCategory === 'centers' && (
                 <div className="space-y-4">
-                    <h3 className="text-xl font-bold text-gray-800">🏥 Центри за ментalno здравје</h3>
+                    <h3 className="text-xl font-bold text-gray-800">🏥 Центри за ментално здравје</h3>
                     {mentalHealthCenters.map((center, index) => (
                         <div key={index} className="bg-white border rounded-lg p-4 shadow-sm">
                             <h4 className="font-medium text-gray-800 text-lg mb-2">{center.name}</h4>

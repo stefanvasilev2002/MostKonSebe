@@ -40,7 +40,7 @@ const Footer = () => {
                             базирана на HBSC истражувања и научни докази.
                         </p>
                         <div className="text-xs text-gray-500">
-                            Верзија 1.0 • Maj 2025
+                            Верзија 1.1 • Јули 2025
                         </div>
                     </div>
 

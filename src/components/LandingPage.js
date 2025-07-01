@@ -20,7 +20,7 @@ const LandingPage = ({ onOpenAuth }) => {
         },
         {
             icon: <Users className="text-blue-500" size={32} />,
-            title: 'Врска со врсници',
+            title: 'Разговор со врсници',
             description: 'Поврзете се со други млади, споделете искуства и најдете поддршка во безбедна средина.'
         },
         {
@@ -38,7 +38,7 @@ const LandingPage = ({ onOpenAuth }) => {
     const testimonials = [
         {
             text: "Оваа платформа ми помогна да се чувствувам помалку сам. Знаевањето дека други млади поминуваат низ слични предизвици ме прави да се чувствувам разбран.",
-            author: "Ана, 15 години",
+            author: "Стефан, 15 години",
             location: "Скопје"
         },
         {
@@ -48,7 +48,7 @@ const LandingPage = ({ onOpenAuth }) => {
         },
         {
             text: "Сакам што можам да ги следам моите емоции и да видам како се подобрувам со времето. Тоа ме мотивира да продолжам да работам на себе си.",
-            author: "Петра, 14 години",
+            author: "Ана, 14 години",
             location: "Охрид"
         }
     ];
@@ -98,7 +98,7 @@ const LandingPage = ({ onOpenAuth }) => {
 
                             <p className="text-lg text-blue-50 leading-relaxed">
                                 Базирана на HBSC истражувања и научни докази, нашата платформа ви помага да се поврзете со врсници,
-                                да научите техники за справување и да го подобрите вашето ментално благосостојба.
+                                да научите техники за справување и да ја подобрите вашата ментална благосостојба.
                             </p>
 
                             <div className="flex flex-col sm:flex-row gap-4">
@@ -155,7 +155,7 @@ const LandingPage = ({ onOpenAuth }) => {
                 <div className="max-w-6xl mx-auto px-6">
                     <div
                         id="features"
-                        data-animate
+                        data-animate=""
                         className={`text-center mb-16 transition-all duration-1000 ${
                             isVisible.features ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-10'
                         }`}
@@ -290,7 +290,7 @@ const LandingPage = ({ onOpenAuth }) => {
                                     'Персонализирани препораки базирани на вашите потреби',
                                     'Поддршка 24/7 од стручни лица',
                                     'Интерактивни алатки за подобрување на менталното здравје',
-                                    'Врска со заедница од врсници'
+                                    'Разговор во заедница од врсници'
                                 ].map((benefit, index) => (
                                     <div key={index} className="flex items-center gap-3">
                                         <CheckCircle className="text-green-400 flex-shrink-0" size={24} />
@@ -313,9 +313,6 @@ const LandingPage = ({ onOpenAuth }) => {
                                 >
                                     Регистрирај се бесплатно
                                 </button>
-                                <p className="text-xs text-blue-200">
-                                    100% бесплатно • Без скриени трошоци • Откажете кога сакате
-                                </p>
                             </div>
                         </div>
                     </div>
@@ -326,10 +323,10 @@ const LandingPage = ({ onOpenAuth }) => {
             <div className="py-16 bg-gray-900 text-white text-center">
                 <div className="max-w-4xl mx-auto px-6">
                     <h2 className="text-3xl font-bold mb-4">
-                        Готови сте да ја започнете вашата патека кон подобро ментално здравје?
+                        Спремни сте да ја започнете вашата патека кон подобро ментално здравје?
                     </h2>
                     <p className="text-xl text-gray-300 mb-8">
-                        Приклучете се на нас денес и откриј го вашиот потенцијал за среќа и благосостојба.
+                        Приклучете се денес и откријте го вашиот потенцијал за среќа и благосостојба.
                     </p>
                     <button
                         onClick={onOpenAuth}

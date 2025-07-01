@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { Users, MessageCircle, Send, Heart, UserPlus, AlertCircle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useChat } from '../hooks/useChat';
@@ -260,7 +260,7 @@ const PeerSupport = () => {
                     <div className="bg-green-50 p-4 rounded-lg">
                         <h4 className="font-medium text-green-800 mb-2">Зошто анонимно?</h4>
                         <ul className="text-sm text-green-700 space-y-1">
-                            <li>• Потпална приватност</li>
+                            <li>• Потполна приватност</li>
                             <li>• Без страв од осудување</li>
                             <li>• Слободно изразување</li>
                             <li>• Професионална поддршка</li>

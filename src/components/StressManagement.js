@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Moon, BookOpen, Play, Pause, RotateCcw, Timer } from 'lucide-react';
+import { Moon, BookOpen, Play, Pause, RotateCcw } from 'lucide-react';
 
 const StressManagement = ({ onCompleteActivity }) => {
     const [breathingActive, setBreathingActive] = useState(false);

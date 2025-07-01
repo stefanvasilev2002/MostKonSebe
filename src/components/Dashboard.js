@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Heart, Zap, TrendingUp, Calendar, Bell, CheckCircle } from 'lucide-react';
+import { Heart, Zap, Bell, CheckCircle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 
 const Dashboard = ({ userProfile, onDailyCheckIn, notifications = [], onCompleteActivity }) => {
